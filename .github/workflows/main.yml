@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: autopr
-        run: pip install -r requirements
+        run: pip install -r requirements.txt
 
       - name: Run AutoPR
         working-directory: autopr
