@@ -1,4 +1,4 @@
-from calculator import add, subtract, multiply, divide
+from calculator import add, subtract, multiply, divide, percentage
 
 
 def test_add():
@@ -15,3 +15,8 @@ def test_multiply():
 
 def test_divide():
     assert divide(10, 2) == 5
+
+
+def test_percentage():
+    assert percentage(50, 200) == 100.0
+    assert percentage(10, 50) == 5.0
