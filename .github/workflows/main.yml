@@ -17,6 +17,8 @@ jobs:
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
+          repository: ${{ github.repository }}
+          ref: main
           path: target_repo
           fetch-depth: 0
           token: ${{ secrets.AUTOPR_TOKEN }}
@@ -27,8 +29,8 @@ jobs:
           repository: djrmgaming0-star/AUTOPR
           ref: feature-1
           path: autopr
-          token: ${{ secrets.AUTOPR_TOKEN }}
           fetch-depth: 0
+          token: ${{ secrets.AUTOPR_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -49,32 +51,30 @@ jobs:
           python -m py_compile main.py
           echo "AutoPR source validation passed."
 
-      - name: Verify configuration
+      - name: Check Gemini configuration
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          AUTOPR_TOKEN: ${{ secrets.AUTOPR_TOKEN }}
         run: |
           if [ -z "$GEMINI_API_KEY" ]; then
-            echo "ERROR: GEMINI_API_KEY secret is missing."
+            echo "GEMINI_API_KEY is missing from AUTOPR-DEMO repository secrets."
             exit 1
           fi
 
-          if [ -z "$AUTOPR_TOKEN" ]; then
-            echo "ERROR: AUTOPR_TOKEN secret is missing."
-            exit 1
-          fi
-
-          echo "Required configuration is available."
+          echo "Gemini API key is available."
 
       - name: Run AutoPR
         working-directory: autopr
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-3.5-flash-lite
+
           GITHUB_TOKEN: ${{ secrets.AUTOPR_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
           WORK_ITEM_ID: ${{ github.event.issue.number }}
+
           AUTOPR_WORKSPACE: ${{ github.workspace }}/target_repo
+
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
         run: |
           python main.py
