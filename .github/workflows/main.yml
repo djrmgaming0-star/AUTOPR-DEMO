@@ -14,9 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ============================================
       # 1. Checkout the target repository
-      # ============================================
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
@@ -24,11 +22,8 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.AUTOPR_TOKEN }}
 
-      # ============================================
       # 2. Checkout the AutoPR agent
-      # IMPORTANT: use the tested feature-1 branch
-      # ============================================
-      - name: Checkout AutoPR
+      - name: Checkout AutoPR agent
         uses: actions/checkout@v4
         with:
           repository: djrmgaming0-star/AUTOPR
@@ -37,36 +32,52 @@ jobs:
           token: ${{ secrets.AUTOPR_TOKEN }}
           fetch-depth: 0
 
-      # ============================================
-      # 3. Set up Python
-      # ============================================
+      # 3. Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # ============================================
-      # 4. Install AutoPR dependencies
-      # ============================================
+      # 4. Install dependencies
       - name: Install dependencies
         working-directory: autopr
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # ============================================
-      # 5. Verify AutoPR source before execution
-      # ============================================
+      # 5. Validate AutoPR source
       - name: Validate AutoPR source
         working-directory: autopr
         run: |
           python -m py_compile agent.py
+          python -m py_compile gemini_client.py
           python -m py_compile main.py
           echo "AutoPR source validation passed."
 
-      # ============================================
-      # 6. Run AutoPR
-      # ============================================
+      # 6. Verify required secrets exist
+      - name: Verify configuration
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AUTOPR_TOKEN: ${{ secrets.AUTOPR_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "ERROR: GEMINI_API_KEY secret is missing."
+            exit 1
+          fi
+
+          if [ -z "$AUTOPR_TOKEN" ]; then
+            echo "ERROR: AUTOPR_TOKEN secret is missing."
+            exit 1
+          fi
+
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "WARNING: SLACK_WEBHOOK_URL secret is missing."
+          fi
+
+          echo "Required AutoPR configuration is available."
+
+      # 7. Run AutoPR
       - name: Run AutoPR
         working-directory: autopr
         env:
