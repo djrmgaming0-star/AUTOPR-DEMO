@@ -1,4 +1,4 @@
-from calculator import add, subtract, multiply, divide
+from calculator import add, subtract, multiply, divide, cube
 
 
 def test_add():
@@ -15,3 +15,9 @@ def test_multiply():
 
 def test_divide():
     assert divide(10, 2) == 5
+
+
+def test_cube():
+    assert cube(3) == 27
+    assert cube(0) == 0
+    assert cube(-2) == -8
