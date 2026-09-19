@@ -17,4 +17,5 @@ def divide(a: float, b: float) -> float:
 
 
 def percentage(a: float, b: float) -> float:
+    """Calculate percentage of b for a."""
     return (a * b) / 100.0
