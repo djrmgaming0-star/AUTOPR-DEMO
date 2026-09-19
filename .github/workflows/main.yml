@@ -14,33 +14,64 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ============================================
+      # 1. Checkout the target repository
+      # ============================================
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
           path: target_repo
           fetch-depth: 0
+          token: ${{ secrets.AUTOPR_TOKEN }}
 
+      # ============================================
+      # 2. Checkout the AutoPR agent
+      # IMPORTANT: use the tested feature-1 branch
+      # ============================================
       - name: Checkout AutoPR
         uses: actions/checkout@v4
         with:
           repository: djrmgaming0-star/AUTOPR
+          ref: feature-1
           path: autopr
           token: ${{ secrets.AUTOPR_TOKEN }}
+          fetch-depth: 0
 
+      # ============================================
+      # 3. Set up Python
+      # ============================================
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # ============================================
+      # 4. Install AutoPR dependencies
+      # ============================================
       - name: Install dependencies
         working-directory: autopr
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
+      # ============================================
+      # 5. Verify AutoPR source before execution
+      # ============================================
+      - name: Validate AutoPR source
+        working-directory: autopr
+        run: |
+          python -m py_compile agent.py
+          python -m py_compile main.py
+          echo "AutoPR source validation passed."
+
+      # ============================================
+      # 6. Run AutoPR
+      # ============================================
       - name: Run AutoPR
         working-directory: autopr
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: gpt-5.6-luna
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.5-flash-lite
 
           GITHUB_TOKEN: ${{ secrets.AUTOPR_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
@@ -50,4 +81,5 @@ jobs:
 
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-        run: python main.py
+        run: |
+          python main.py
